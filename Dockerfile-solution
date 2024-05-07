@@ -5,7 +5,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 WORKDIR /src/
 COPY . .
-RUN ls -lsah
 RUN dotnet tool restore || true
 RUN dotnet restore
 RUN dotnet build -c Release --no-restore
