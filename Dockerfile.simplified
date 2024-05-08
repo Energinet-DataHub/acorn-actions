@@ -3,20 +3,18 @@ ARG RUNTIME_VERSION
 FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS base
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
+ARG PROJECT
 WORKDIR /src/
 COPY . .
-RUN dotnet tool restore || true
-RUN dotnet publish -c Release --artifacts-path /app
-WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
+RUN dotnet tool restore || true
+RUN dotnet restore
+RUN dotnet build -c Release --no-restore
+RUN dotnet publish ${PROJECT} -c Release -o /app/publish --no-restore --no-build
 
 FROM base AS final
-ARG ASSEMBLY
-ARG ARTIFACT
 WORKDIR /app
-COPY --from=build /app/publish/${ARTIFACT}/release/ .
-COPY --from=build /app/publish/${ARTIFACT}/release/${ASSEMBLY} main
-COPY --from=build /app/publish/${ARTIFACT}/release/${ASSEMBLY}.runtimeconfig.json main.runtimeconfig.json
+COPY --from=build /app/publish .
 COPY migrations/* /migrations/
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
