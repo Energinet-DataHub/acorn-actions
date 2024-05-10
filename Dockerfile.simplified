@@ -15,8 +15,8 @@ else
 fi
 EOR
 RUN dotnet tool restore || true
-RUN dotnet restore
-RUN dotnet build -c Release --no-restore
+RUN dotnet restore ${PROJECT}
+RUN dotnet build ${PROJECT} -c Release --no-restore
 RUN dotnet publish ${PROJECT} -c Release -o /app/publish --no-restore --no-build
 WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
