@@ -56,7 +56,7 @@ runs:
         version: ""
       run: |
         dotnet tool restore || true
-        dotnet restore "${{ inputs.project }}"
+        dotnet restore
 
     - name: Lint
       working-directory: ${{ inputs.path }}
