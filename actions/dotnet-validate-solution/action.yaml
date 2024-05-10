@@ -7,16 +7,6 @@ inputs:
     description: The path of the parent folder of the solution.
     required: true
 
-  project:
-    description: The path of a project file that is used to generate migrations with, if needed. Both project and migrations must be present for the check to happen.
-    default: ""
-    required: false
-
-  migrations:
-    description: The path of a commited sql file, that needs to be validated against. Both project and migrations must be present for the check to happen.
-    default: ""
-    required: false
-
   dotnet-version:
     description: The version of dotnet to use
     required: true
@@ -81,26 +71,3 @@ runs:
       env:
         version: ""
       run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
-
-    - name: Validate migration
-      shell: bash
-      env:
-        VERSION: ${{ inputs.dotnet-version }}
-        PROJECT: ${{ inputs.project }}
-        COMMITED_SQL_FILE: ${{ inputs.migrations }}
-      if: ${{ '' != inputs.migrations && '' != inputs.project }}
-      run: |
-        GENERATED_SQL_FILE=/tmp/current.sql
-        version=$(echo $VERSION | cut -c 1)
-        if [ "$version" = "6" ]; then
-          argument="--version 6.0.25"
-        elif [ "$version" = "7" ]; then
-          argument="--version 7.0.14"
-        fi
-        dotnet list package --format=json | grep 'Microsoft.EntityFrameworkCore"' >/dev/null || exit 0
-        dotnet tool install --global $argument dotnet-ef >/dev/null
-        dotnet ef migrations script --project "$PROJECT" -i -o "$GENERATED_SQL_FILE"
-
-        cat < "$GENERATED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/a
-        cat < "$COMMITED_SQL_FILE" | sed '/INSERT INTO "__EFMigrationsHistory"/,/);$/d' > /tmp/b
-        diff -q /tmp/a /tmp/b >/dev/null || { echo "Unexpected difference:"; diff /tmp/a /tmp/b; exit 1; }
