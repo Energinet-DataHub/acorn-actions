@@ -71,6 +71,8 @@ runs:
       shell: bash
       working-directory: base
       if: inputs.configurations != ''
+      env:
+        LIST: ${{ inputs.configurations }}
       run: |
         while read file; do
           configuration="../$file"
@@ -83,7 +85,7 @@ runs:
             path=$(jq -r -c '.path' <<< "$reference")
             echo yq -ie "'($path) = \"$image\"'" "$file" | bash -x
           done
-        done <<< ${{ inputs.configurations }}
+        done <<< $LIST
 
     - name: Commit changes
       id: commit
