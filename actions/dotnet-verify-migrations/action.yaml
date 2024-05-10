@@ -59,13 +59,19 @@ runs:
       shell: bash
       run: dotnet --info
 
-    - name: Restore
+    - name: Restore tools
       working-directory: ${{ inputs.path }}
       shell: bash
       env:
         version: ""
       run: |
         dotnet tool restore || true
+
+    - name: Restore
+      shell: bash
+      env:
+        version: ""
+      run: |
         dotnet restore "${{ inputs.project }}"
 
     - name: Validate migration
