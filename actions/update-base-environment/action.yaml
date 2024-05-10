@@ -75,6 +75,7 @@ runs:
         LIST: ${{ inputs.configurations }}
       run: |
         while read file; do
+          [ -z "$file" ] && continue
           configuration="../$file"
           repo=$(yq '.repo' < "$configuration")
           name=$(yq '.name' < "$configuration")
