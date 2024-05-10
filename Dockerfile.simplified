@@ -6,6 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG PROJECT
 WORKDIR /src/
 COPY . .
+RUN touch allow.copying
 RUN <<EOR
 grep -q "<AssemblyName>" ${PROJECT}
 if [ $? -eq 0 ]; then
@@ -20,9 +21,11 @@ WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
 
 FROM base AS final
+ARG MIGRATIONS
 WORKDIR /app
 COPY --from=build /app/publish .
-COPY migrations/* /migrations/
+COPY --from=build /src/allow.copying /src/${MIGRATIONS}* /migrations/
+RUN rm /migrations/allow.copying
 COPY --from=busybox:uclibc /bin/cp /bin/cp
 COPY --from=busybox:uclibc /bin/cat /bin/cat
 COPY --from=busybox:uclibc /bin/ls /bin/ls
