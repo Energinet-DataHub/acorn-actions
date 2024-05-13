@@ -1,4 +1,4 @@
-name: Validate dependabot
+name: Validate Dependabot
 
 on:
   pull_request:

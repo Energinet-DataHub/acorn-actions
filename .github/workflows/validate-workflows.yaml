@@ -3,7 +3,7 @@ name: Validate Actions and Workflows
 on:
   pull_request:
     paths:
-      - .github
+      - .github/**
 
 jobs:
   validate:
