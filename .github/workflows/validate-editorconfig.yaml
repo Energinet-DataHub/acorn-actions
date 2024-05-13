@@ -1,4 +1,4 @@
-name: Editorconfig check
+name: Validate Editorconfig
 
 on:
   pull_request: {}

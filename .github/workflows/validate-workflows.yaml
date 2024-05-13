@@ -16,6 +16,4 @@ jobs:
             action-validator 0.5.1
       - name: Lint Actions
         run: |
-          mkdir .github/workflows 2>/dev/null || true
-          mkdir .github/actions 2>/dev/null || true
           find .github/workflows .github/actions -type f \( -iname \*.yaml -o -iname \*.yml \) | xargs -I {} action-validator --verbose {}
