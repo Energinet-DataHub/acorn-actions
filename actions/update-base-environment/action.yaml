@@ -23,6 +23,10 @@ inputs:
     description: Perform all actions but without committing changes
     required: false
     default: "false"
+  registry-push:
+    description: Push local image reference to its configured registry
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -86,6 +90,44 @@ runs:
             path=$(jq -r -c '.path' <<< "$reference")
             echo yq -ie "'($path) = \"$image\"'" "$file" | bash -x
           done
+        done <<< $LIST
+
+    - name: Log in to the Container registry
+      if: inputs.registry-push == 'true'
+      uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+        ecr: false
+
+    - name: Push image reference to Container registry
+      shell: bash
+      working-directory: base
+      if: inputs.configuration != '' && inputs.registry-push == 'true'
+      run: |
+        configuration="../${{ inputs.configuration }}"
+        repo=$(yq '.repo' < "$configuration")
+        name=$(yq '.name' < "$configuration")
+        image="$repo/$name:${{ env.version }}"
+
+        docker push "$image"
+
+    - name: Push multiple image references to Container registry
+      shell: bash
+      working-directory: base
+      if: inputs.configurations != '' && inputs.registry-push == 'true'
+      env:
+        LIST: ${{ inputs.configurations }}
+      run: |
+        while read file; do
+          [ -z "$file" ] && continue
+          configuration="../$file"
+          repo=$(yq '.repo' < "$configuration")
+          name=$(yq '.name' < "$configuration")
+          image="$repo/$name:${{ env.version }}"
+
+          docker push "$image"
         done <<< $LIST
 
     - name: Commit changes
