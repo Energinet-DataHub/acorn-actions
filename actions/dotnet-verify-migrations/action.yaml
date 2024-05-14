@@ -1,6 +1,6 @@
 name: Dotnet Validate
 
-description: Lints and tests a domain.
+description: Validates a migration sql file matches a freshly generated migration sql file.
 
 inputs:
   path:
