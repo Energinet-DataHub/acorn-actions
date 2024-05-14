@@ -4,6 +4,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-jammy-chiseled-extra AS 
 
 FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-jammy AS build
 ARG PROJECT
+ARG MIGRATIONS
 WORKDIR /src/
 COPY . .
 RUN <<EOR
@@ -26,7 +27,6 @@ fi
 EOR
 
 FROM base AS final
-ARG MIGRATIONS
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=build /app/migrations /migrations/
