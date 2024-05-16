@@ -27,6 +27,10 @@ inputs:
     description: Push local image reference to its configured registry
     required: false
     default: "false"
+  image-version:
+    description: Override the image version to be this given version instead
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -53,7 +57,13 @@ runs:
       run: git fetch && git checkout ${{ inputs.branch }} 2>/dev/null || git checkout -b ${{ inputs.branch }}
 
     - name: Resolve version
-      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1 # TODO: This seems to be changed
+      if: inputs.image-version == ''
+      uses: Energinet-DataHub/acorn-actions/actions/docker-image-version@v1 # TODO: This needs to be changed
+
+    - name: Override version
+      if: inputs.image-version != ''
+      shell: bash
+      run: echo "version=${{ inputs.image-version }}" | tee -a $GITHUB_ENV
 
     - name: Update references
       shell: bash
