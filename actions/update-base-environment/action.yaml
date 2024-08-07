@@ -31,6 +31,10 @@ inputs:
     description: Override the image version to be this given version instead
     required: false
     default: ""
+  allow-changeless-verify-push-skip:
+    description: Allow skipping verification of push when no changes have been made
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -151,7 +155,7 @@ runs:
 
     - name: Commit changes
       id: commit
-      if: ${{ inputs.dry_run != 'true' && env.CHANGES_MADE == 'true' }}
+      if: ${{ inputs.dry_run != 'true' }}
       uses: EndBug/add-and-commit@v9
       with:
         message: Use ${{ env.version }}
@@ -162,7 +166,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' && env.CHANGES_MADE == 'true' }}
+      if: inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' && (inputs.allow-changeless-verify-push-skip == 'false' || env.CHANGES_MADE == 'true')
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
