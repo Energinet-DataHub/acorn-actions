@@ -40,10 +40,10 @@ runs:
       if: inputs.configuration == '' && inputs.configurations == ''
       run: exit 1
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Checkout environment repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: base
         repository: ${{ inputs.repository }}
