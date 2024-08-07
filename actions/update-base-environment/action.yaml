@@ -31,10 +31,6 @@ inputs:
     description: Override the image version to be this given version instead
     required: false
     default: ""
-  skip-verify-push:
-    description: Skip verify push check
-    required: false
-    default: "false"
 
 runs:
   using: composite
@@ -147,6 +143,10 @@ runs:
     - name: Set CHANGES_MADE
       shell: bash
       run: |
+        git status
+
+        git diff
+
         echo "git diff exit code:"
         git diff --quiet; echo $?
 
