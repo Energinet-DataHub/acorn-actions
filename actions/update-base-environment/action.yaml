@@ -142,6 +142,7 @@ runs:
 
     - name: Set CHANGES_MADE
       shell: bash
+      working-directory: base
       run: |
         git status
 
