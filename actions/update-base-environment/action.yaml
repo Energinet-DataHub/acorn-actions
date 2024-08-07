@@ -147,6 +147,9 @@ runs:
     - name: Set CHANGES_MADE
       shell: bash
       run: |
+        echo "git diff exit code:"
+        git diff --quiet; echo $?
+
         CHANGES_MADE=$(git diff --quiet > /dev/null 2>&1 && echo "false" || echo "true")
 
         echo "CHANGES_MADE=${CHANGES_MADE}" >> $GITHUB_ENV
