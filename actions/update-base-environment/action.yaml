@@ -31,6 +31,10 @@ inputs:
     description: Override the image version to be this given version instead
     required: false
     default: ""
+  skip-verify-push:
+    description: The configuration file
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -153,7 +157,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' }}
+      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' && inputs.skip-verify-push == 'false' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
