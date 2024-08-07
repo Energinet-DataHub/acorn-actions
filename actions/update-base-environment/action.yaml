@@ -144,9 +144,17 @@ runs:
           docker push "$image"
         done <<< $LIST
 
+    - name: Set CHANGES_MADE
+      shell: bash
+      run: |
+        CHANGES_MADE=$(git diff --quiet > /dev/null 2>&1 && echo "false" || echo "true")
+
+        echo "CHANGES_MADE=${CHANGES_MADE}" >> $GITHUB_ENV
+        echo "CHANGES_MADE: $CHANGES_MADE"
+
     - name: Commit changes
       id: commit
-      if: ${{ inputs.dry_run != 'true' }}
+      if: ${{ inputs.dry_run != 'true' && env.CHANGES_MADE == 'true' }}
       uses: EndBug/add-and-commit@v9
       with:
         message: Use ${{ env.version }}
@@ -157,7 +165,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' && inputs.skip-verify-push == 'false' }}
+      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' && env.CHANGES_MADE == 'true' }}
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
