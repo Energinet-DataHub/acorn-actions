@@ -150,8 +150,7 @@ runs:
       run: |
         CHANGES_MADE=$(git diff --quiet > /dev/null 2>&1 && echo "false" || echo "true")
 
-        echo "CHANGES_MADE=${CHANGES_MADE}" >> $GITHUB_ENV
-        echo "CHANGES_MADE: $CHANGES_MADE"
+        echo "CHANGES_MADE=${CHANGES_MADE}" | tee -a $GITHUB_ENV
 
     - name: Commit changes
       id: commit
