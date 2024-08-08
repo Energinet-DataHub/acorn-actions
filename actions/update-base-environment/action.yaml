@@ -31,6 +31,10 @@ inputs:
     description: Override the image version to be this given version instead
     required: false
     default: ""
+  allow-changeless-verify-push-skip:
+    description: Allow skipping verification of push when no changes have been made
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -40,10 +44,10 @@ runs:
       if: inputs.configuration == '' && inputs.configurations == ''
       run: exit 1
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Checkout environment repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: base
         repository: ${{ inputs.repository }}
@@ -140,6 +144,14 @@ runs:
           docker push "$image"
         done <<< $LIST
 
+    - name: Set CHANGES_MADE
+      shell: bash
+      working-directory: base
+      run: |
+        CHANGES_MADE=$(git diff --quiet > /dev/null 2>&1 && echo "false" || echo "true")
+
+        echo "CHANGES_MADE=${CHANGES_MADE}" | tee -a $GITHUB_ENV
+
     - name: Commit changes
       id: commit
       if: ${{ inputs.dry_run != 'true' }}
@@ -153,7 +165,7 @@ runs:
 
     - name: Verify changes were pushed
       shell: bash
-      if: ${{ inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' }}
+      if: inputs.dry_run == 'false' && steps.commit.outputs.pushed == 'false' && (inputs.allow-changeless-verify-push-skip == 'false' || env.CHANGES_MADE == 'true')
       run: |
         echo "::error::Nothing was committed or pushed"
         exit 1
