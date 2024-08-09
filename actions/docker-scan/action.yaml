@@ -12,6 +12,10 @@ inputs:
   upload-sarif:
     description: Determines if the sarif result is uploaded
     required: true
+  grype-category:
+    description: The grype category name
+    required: false
+    default: "grype"
 
 runs:
   using: composite
@@ -50,4 +54,4 @@ runs:
       uses: github/codeql-action/upload-sarif@v2
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
-        category: grype
+        category: ${{ inputs.grype-category }}
