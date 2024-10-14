@@ -31,8 +31,8 @@ inputs:
       ```
     required: false
   tool-version:
-    default: 2.4.0
-    description: The version of the dotnet-project-licenses tool to use
+    default: 3.0.13
+    description: The version of the nuget-license tool to use
     required: false
 
 runs:
@@ -41,9 +41,9 @@ runs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
 
-    - name: Install license tool
+    - name: Install nuget-license tool
       shell: bash
-      run: dotnet tool install --global dotnet-project-licenses --version ${{ inputs.tool-version }}
+      run: dotnet tool install --global nuget-license --version ${{ inputs.tool-version }}
 
     - name: Add mapping argument
       shell: bash
@@ -52,4 +52,4 @@ runs:
 
     - name: Run license check
       shell: bash
-      run: ~/.dotnet/tools/dotnet-project-licenses -i ${{ inputs.project-folder }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ env.ARGUMENTS }}
+      run: ~/.dotnet/tools/nuget-license -i ${{ inputs.project-folder }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ env.ARGUMENTS }}
