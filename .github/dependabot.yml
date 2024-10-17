@@ -6,7 +6,5 @@ updates:
     schedule:
       interval: daily
     groups:
-      pages-and-artifact-actions:
-        patterns:
-          - "actions/*pages*"
-          - "actions/*-artifact"
+      all-actions:
+        patterns: [ "*" ]
