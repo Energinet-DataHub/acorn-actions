@@ -63,7 +63,11 @@ runs:
     - name: Add ignore argument
       shell: bash
       if: inputs.license-ignore-file
-      run: echo "ARGUMENTS=--ignored-packages ${{ inputs.license-ignore-file }} ${{ env.ARGUMENTS }}" | tee -a $GITHUB_ENV
+      run: |
+        echo "ARGUMENTS=--ignored-packages ${{ inputs.license-ignore-file }} ${{ env.ARGUMENTS }}" | tee -a $GITHUB_ENV
+
+        echo '### Ignored files:' >> $GITHUB_STEP_SUMMARY
+        jq -r '.[]' < '${{ inputs.license-ignore-file }}' | xargs -I {} echo '- {}' >> $GITHUB_STEP_SUMMARY
 
     - name: Auto-correct project argument
       shell: bash
