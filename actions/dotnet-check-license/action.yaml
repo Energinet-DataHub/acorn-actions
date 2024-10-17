@@ -4,7 +4,7 @@ description: Verifies only allowed licenses are in use
 
 inputs:
   project-folder:
-    description: The folder containing the project to check.
+    description: The project folder, project file or solution file to check.
     required: true
   allowed-licenses-file:
     description: |
@@ -48,8 +48,22 @@ runs:
     - name: Add mapping argument
       shell: bash
       if: inputs.license-mapping-file
-      run: echo "ARGUMENTS=--licenseurl-to-license-mappings ${{ inputs.license-mapping-file }}" >> $GITHUB_ENV
+      run: echo "ARGUMENTS=--licenseurl-to-license-mappings ${{ inputs.license-mapping-file }}" | tee -a $GITHUB_ENV
+
+    - name: Auto-correct project argument
+      shell: bash
+      run: |
+        if [ -d '${{ inputs.project-folder }}' ]; then
+          file=$(find '${{ inputs.project-folder }}' \( -iname "*.csproj" -o -iname "*.solution" \) | head -n1)
+          if [ -z "$file" ]; then
+            echo "::error::No project was found in '${{ inputs.project-folder }}'."
+            exit 1
+          fi
+          echo "PROJECT=$file" | tee -a $GITHUB_ENV
+        else
+          echo "PROJECT=${{ inputs.project-folder }}" | tee -a $GITHUB_ENV
+        fi
 
     - name: Run license check
       shell: bash
-      run: ~/.dotnet/tools/nuget-license -i ${{ inputs.project-folder }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ env.ARGUMENTS }}
+      run: ~/.dotnet/tools/nuget-license -i ${{ env.PROJECT }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ env.ARGUMENTS }}
