@@ -69,7 +69,7 @@ runs:
       shell: bash
       run: |
         if [ -d '${{ inputs.project-folder }}' ]; then
-          file=$(find '${{ inputs.project-folder }}' \( -iname "*.csproj" -o -iname "*.solution" \) | head -n1)
+          file=$(find '${{ inputs.project-folder }}' \( -iname "*.csproj" -o -iname "*.sln" \) | head -n1)
           if [ -z "$file" ]; then
             echo "::error::No project was found in '${{ inputs.project-folder }}'."
             exit 1
