@@ -81,4 +81,6 @@ runs:
 
     - name: Run license check
       shell: bash
-      run: ~/.dotnet/tools/nuget-license --input ${{ env.PROJECT }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ env.ARGUMENTS }}
+      run: |
+        dotnet restore ${{ env.PROJECT }}
+        ~/.dotnet/tools/nuget-license --input ${{ env.PROJECT }} --allowed-license-types ${{ inputs.allowed-licenses-file }} ${{ env.ARGUMENTS }}
