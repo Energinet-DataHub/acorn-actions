@@ -1,0 +1,6 @@
+Need something to run tests on better...
+  --override-arch amd64 --override-os linux
+  sed -i (requires input on macOS)
+  docker-compose?
+
+Workflow tests?
