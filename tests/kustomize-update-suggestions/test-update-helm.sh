@@ -22,7 +22,7 @@ set -ex
 stat "$TMP/out" > /dev/null
 grep -q '+ yq' "$TMP/out"
 grep -q 'cert-manager' "$TMP/out"
-test 1 -eq $(wc -l < "$TMP/out")
+test 1 -eq "$(wc -l < "$TMP/out")"
 set +ex
 
 reset_resources
@@ -31,7 +31,7 @@ echo "$RESOURCES" >"$TMP/excludes"
 bash "$SCRIPT" "$RESOURCES" "$TMP/excludes" >"$TMP/out" 2>&1
 set -ex
 stat "$TMP/out" > /dev/null
-test 0 -eq $(wc -l < "$TMP/out")
+test 0 -eq "$(wc -l < "$TMP/out")"
 set +ex
 
 reset_resources
@@ -42,7 +42,7 @@ set -ex
 stat "$TMP/out" > /dev/null
 grep -q '+ yq' "$TMP/out"
 grep -q 'cert-manager' "$TMP/out"
-test 1 -eq $(wc -l < "$TMP/out")
+test 1 -eq "$(wc -l < "$TMP/out")"
 set +ex
 
 echo "Success!"
