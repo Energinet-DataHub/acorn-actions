@@ -1,45 +1,48 @@
 #!/bin/bash
 
-set -e
+set +e
 
 BASE=$(dirname "$0")
 SCRIPT="$BASE/../../actions/kustomize-update-suggestions/update-helm.sh"
-RESOURCES="$BASE/resources"
-TMP=$(mktemp -d)
+FIXTURES="$BASE/fixtures"
+RESOURCES="/tmp/fixtures"
+TMP=/tmp/logs
 
 reset_resources() {
-    git checkout "$RESOURCES" 2> /dev/null
+    find "$TMP" -type f -not -name .gitignore -delete
+    rm -rf "$RESOURCES" 2>/dev/null
+    mkdir -p "$RESOURCES"
+    cp -r "$FIXTURES" "$RESOURCES"
 }
-reset_resources
 
-echo "Test 1"
-bash "$SCRIPT" "$RESOURCES" /dev/null >"$TMP/out1" 2>&1
-set -x
-stat "$TMP/out1" > /dev/null
-grep -q '+ yq' "$TMP/out1"
-grep -q 'cert-manager' "$TMP/out1"
-test 1 -eq $(wc -l < "$TMP/out1")
-set +x
 reset_resources
+echo "Test cert-manager is marked as updatable"
+bash "$SCRIPT" "$RESOURCES" /dev/null >"$TMP/out" 2>&1
+set -ex
+stat "$TMP/out" > /dev/null
+grep -q '+ yq' "$TMP/out"
+grep -q 'cert-manager' "$TMP/out"
+test 1 -eq $(wc -l < "$TMP/out")
+set +ex
 
-echo "Test 2"
-echo "$RESOURCES" >"$TMP/conf2"
-bash "$SCRIPT" "$RESOURCES" "$TMP/conf2" >"$TMP/out2" 2>&1
-set -x
-stat "$TMP/out2" > /dev/null
-test 0 -eq $(wc -l < "$TMP/out2")
-set +x
 reset_resources
+echo "Test excludes correctly prevents cert-manager from being marked"
+echo "$RESOURCES" >"$TMP/excludes"
+bash "$SCRIPT" "$RESOURCES" "$TMP/excludes" >"$TMP/out" 2>&1
+set -ex
+stat "$TMP/out" > /dev/null
+test 0 -eq $(wc -l < "$TMP/out")
+set +ex
 
-echo "Test 3"
-echo "doesnotmatter\nalsoirrelevant" >"$TMP/conf3"
-bash "$SCRIPT" "$RESOURCES" "$TMP/conf3" /dev/null >"$TMP/out3" 2>&1
-set -x
-stat "$TMP/out3" > /dev/null
-grep -q '+ yq' "$TMP/out3"
-grep -q 'cert-manager' "$TMP/out3"
-test 1 -eq $(wc -l < "$TMP/out3")
-set +x
 reset_resources
+echo "Test cert-manager is marked as updatable when other things are excluded"
+printf "doesnotmatter\nalsoirrelevant\n" >"$TMP/excludes"
+bash "$SCRIPT" "$RESOURCES" "$TMP/excludes" /dev/null >"$TMP/out" 2>&1
+set -ex
+stat "$TMP/out" > /dev/null
+grep -q '+ yq' "$TMP/out"
+grep -q 'cert-manager' "$TMP/out"
+test 1 -eq $(wc -l < "$TMP/out")
+set +ex
 
 echo "Success!"
