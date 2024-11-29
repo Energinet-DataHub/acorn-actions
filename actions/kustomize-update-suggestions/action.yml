@@ -85,7 +85,7 @@ runs:
       shell: bash
       run: |
         {
-          echo "## ${{ inputs.patch }}"
+          echo "## ${{ inputs.path }}"
           echo \`\`\`
           cat "${{ inputs.patch }}"
           echo \`\`\`
