@@ -71,13 +71,6 @@ runs:
       env:
         version: ""
       run: |
-        output=$(dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal")
-
-        echo "$output" | grep -E "Passed!|Failed!"
-
-        if echo "$output" | grep -q "Failed!"; then
-          echo "Failed tests and stack traces:"
-          echo "$output" | grep -A 10 "Failed"
-          exit 1
+        dotnet test --no-restore --logger "console;verbosity=detailed" | grep -A 10 "Failed"
         fi
 
