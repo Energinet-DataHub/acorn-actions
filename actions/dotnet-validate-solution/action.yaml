@@ -70,5 +70,7 @@ runs:
       shell: bash
       env:
         version: ""
+        DOTNET_LOG_LEVEL: Warning
+        DOTNET_TESTCONTAINERS_LOGLEVEL: Warning
       run: dotnet test -v quiet --nologo -l:"console;verbosity=normal"
 
