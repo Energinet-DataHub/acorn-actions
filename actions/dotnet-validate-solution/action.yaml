@@ -70,7 +70,5 @@ runs:
       shell: bash
       env:
         version: ""
-      run: |
-        dotnet test --no-restore --logger "console;verbosity=detailed" | grep -A 10 "Failed"
-        fi
+      run: dotnet test -v quiet --nologo -l:"console;verbosity=normal"
 
