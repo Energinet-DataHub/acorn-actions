@@ -65,12 +65,15 @@ runs:
         version: ""
       run: dotnet format --verify-no-changes -v diag
 
-    - name: Test
-      working-directory: ${{ inputs.path }}
-      shell: bash
-      env:
-        version: ""
-        DOTNET_LOG_LEVEL: Warning
-        DOTNET_TESTCONTAINERS_LOGLEVEL: Warning
-      run: dotnet test -v quiet --nologo -l:"console;verbosity=normal"
+    - name: Run tests with JUnit logger
+      run: |
+        mkdir -p test-results
+        dotnet test --test-adapter-path:. --logger:"junit;LogFilePath=./test-results/{assembly}-test-results.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
+
+    - name: Parse JUnit test results
+      uses: dorny/test-reporter@v1
+      with:
+        name: Test Report
+        path: ./test-results/**/*.xml
+        reporter: junit
 
