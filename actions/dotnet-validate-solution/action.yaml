@@ -16,9 +16,9 @@ inputs:
     default: "false"
     required: false
 
-  logger:
+  generate-report:
     description: The output format for dotnet tests
-    default: "console"
+    default: "false"
     required: false
 
 runs:
@@ -75,5 +75,5 @@ runs:
       shell: bash
       env:
         version: ""
-      run: dotnet test --no-restore -warnaserror --logger "${{ inputs.logger == 'trx' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
+      run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
 
