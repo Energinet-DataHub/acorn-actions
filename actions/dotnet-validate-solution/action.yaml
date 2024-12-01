@@ -75,5 +75,4 @@ runs:
       shell: bash
       env:
         version: ""
-        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
-      run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}" /p:VsTestUseMSBuildOutput=true
+      run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
