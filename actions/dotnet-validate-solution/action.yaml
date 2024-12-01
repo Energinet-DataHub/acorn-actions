@@ -70,4 +70,4 @@ runs:
       shell: bash
       env:
         version: ""
-      run: dotnet test --no-restore --logger GitHubActions
+      run: dotnet test --no-restore -warnaserror --logger GitHubActions
