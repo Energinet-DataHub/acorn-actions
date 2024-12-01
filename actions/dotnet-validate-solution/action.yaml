@@ -83,5 +83,5 @@ runs:
         results-path: ${{ inputs.path }}/test_results.trx
         comment-title: 'Test Results'
         allow-failed-tests: false
-        show-failed-tests-only: true
-        show-test-output: true
+        show-failed-tests-only: false
+        show-test-output: false
