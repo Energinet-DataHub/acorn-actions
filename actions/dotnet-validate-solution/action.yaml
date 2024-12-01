@@ -16,10 +16,6 @@ inputs:
     default: "false"
     required: false
 
-  github-token:
-    description: GitHub token for authentication.
-    required: true
-
 runs:
   using: composite
 
