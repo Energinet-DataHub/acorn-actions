@@ -16,6 +16,10 @@ inputs:
     default: "false"
     required: false
 
+  github-token:
+    description: GitHub token for authentication.
+    required: true
+
 runs:
   using: composite
 
@@ -71,3 +75,13 @@ runs:
       env:
         version: ""
       run: dotnet test --no-restore -warnaserror --logger "trx;LogFileName=test_results.trx"
+
+    - name: Report Test Results
+      uses: bibipkins/dotnet-test-reporter@v1.4.1
+      with:
+        github-token: ${{ inputs.github-token }}
+        results-path: './**/*.trx'
+        comment-title: 'Test Results'
+        allow-failed-tests: 'false'
+        show-failed-tests-only: 'false'
+        show-test-output: 'false'
