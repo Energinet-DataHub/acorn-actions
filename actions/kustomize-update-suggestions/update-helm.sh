@@ -25,18 +25,17 @@ for ITEM in $LIST; do
         repo=$(echo "$item" | jq -r '.repo' -)
         version=$(echo "$item" | jq -r '.version' -)
 
-        helm repo remove "$name" 2>/dev/null >/dev/null || true
-        helm repo add "$name" "$repo" 2>/dev/null >/dev/null
+        if [[ "$repo" = oci://* ]]; then
+            updatedVersion=$(helm show chart "$repo/$name" 2>/dev/null | yq .version)
+        else
+            updatedVersion=$(helm show chart "$name" --repo "$repo" | yq .version)
+        fi
 
-        helm search repo "$name/$name" -o json --fail-on-no-result > "$tmp/info"
-        status=$?
-        helm repo remove "$name" 2>/dev/null >/dev/null
-        if [ $status -ne 0 ]; then
+        if [ "$updatedVersion" = "" ]; then
             echo "::error::failed to lookup '$name' in '$repo'" 1>&2
             continue
         fi
 
-        updatedVersion=$(jq --arg name "$name/$name" -rc '.[] | select(.name == $name) | .version' < "$tmp/info")
         if [ "$updatedVersion" = "$version" ]; then
             continue
         fi

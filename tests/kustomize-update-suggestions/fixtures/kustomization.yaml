@@ -11,3 +11,8 @@ helmCharts:
     valuesInline:
       crds:
         enabled: true
+  - name: thanos
+    namespace: something
+    releaseName: something
+    repo: oci://registry-1.docker.io/bitnamicharts
+    version: 15.8.1
