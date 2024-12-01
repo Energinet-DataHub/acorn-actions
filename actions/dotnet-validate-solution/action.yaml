@@ -65,16 +65,9 @@ runs:
         version: ""
       run: dotnet format --verify-no-changes -v diag
 
-    - name: Run tests with JUnit logger
+    - name: Run tests
+      working-directory: ${{ inputs.path }}
       shell: bash
-      run: |
-        mkdir -p test-results
-        dotnet test --test-adapter-path:. --logger:"junit;LogFilePath=./test-results/{assembly}-test-results.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
-
-    - name: Parse JUnit test results
-      uses: dorny/test-reporter@v1
-      with:
-        name: Test Report
-        path: ./test-results/**/*.xml
-        reporter: junit
-
+      env:
+        version: ""
+      run: dotnet test --no-restore --logger GitHubActions
