@@ -17,7 +17,7 @@ inputs:
     required: false
 
   generate-report:
-    description: The output format for dotnet tests
+    description: Disable the console output, and generate a trx test report.
     default: "false"
     required: false
 
