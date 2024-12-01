@@ -63,17 +63,30 @@ runs:
         dotnet tool restore || true
         dotnet restore
 
-    - name: Lint
+    - name: Lint and Test in Parallel
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
-      run: dotnet format --verify-no-changes -v diag
+      run: |
+        set -e
+        FORMAT_LOG="dotnet_format.log"
+        dotnet format --verify-no-changes -v diag > "$FORMAT_LOG" 2>&1 &
+        FORMAT_PID=$!
 
-    - name: Test
-      working-directory: ${{ inputs.path }}
-      shell: bash
-      env:
-        version: ""
-      run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
+        dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
+        TEST_EXIT_CODE=$?
 
+        wait $FORMAT_PID
+        FORMAT_EXIT_CODE=$?
+
+        if [ $FORMAT_EXIT_CODE -ne 0 ]; then
+          echo "dotnet format failed"
+          echo "--------------------------------------------"
+          cat "$FORMAT_LOG"
+          echo "--------------------------------------------"
+          exit $FORMAT_EXIT_CODE
+        fi
+
+        if [ $TEST_EXIT_CODE -ne 0 ]; then
+          echo "dotnet test failed"
+          exit $TEST_EXIT_CODE
+        fi
