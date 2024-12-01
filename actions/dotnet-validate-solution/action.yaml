@@ -65,10 +65,19 @@ runs:
         version: ""
       run: dotnet format --verify-no-changes -v diag
 
-    - name: Run tests and save TRX results
+    - name: Test
       working-directory: ${{ inputs.path }}
       shell: bash
       env:
         version: ""
-      run: |
-        dotnet test --no-restore --logger "trx;LogFileName=test-results.trx"
+      run: dotnet test --no-restore -warnaserror --logger "trx;LogFileName=test_results.trx"
+
+    - name: Report Test Results
+      uses: bibipkins/dotnet-test-reporter@v1.4.1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        results-path: ${{ inputs.path }}/test_results.trx
+        comment-title: 'Test Results'
+        allow-failed-tests: false
+        show-failed-tests-only: true
+        show-test-output: true
