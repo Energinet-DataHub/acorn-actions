@@ -16,6 +16,10 @@ inputs:
     default: "false"
     required: false
 
+  github-token:
+    description: GitHub token for authentication.
+    required: true
+
 runs:
   using: composite
 
@@ -75,7 +79,7 @@ runs:
     - name: Report Test Results
       uses: bibipkins/dotnet-test-reporter@v1.4.1
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ inputs.github-token }}
         results-path: ${{ inputs.path }}/test_results.trx
         comment-title: 'Test Results'
         allow-failed-tests: false
