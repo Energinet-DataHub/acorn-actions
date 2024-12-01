@@ -66,6 +66,7 @@ runs:
       run: dotnet format --verify-no-changes -v diag
 
     - name: Run tests with JUnit logger
+      shell: bash
       run: |
         mkdir -p test-results
         dotnet test --test-adapter-path:. --logger:"junit;LogFilePath=./test-results/{assembly}-test-results.xml;MethodFormat=Class;FailureBodyFormat=Verbose"
