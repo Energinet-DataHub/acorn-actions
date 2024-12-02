@@ -77,11 +77,11 @@ runs:
         version: ""
       run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
 
-    - name: 🧪 show
+    - name: Show
       working-directory: ${{ inputs.path }}
       shell: bash
       continue-on-error: false
       if: always()
-      run:  
+      run:
         dotnet tool update -g dotnet-trx
         trx --output
