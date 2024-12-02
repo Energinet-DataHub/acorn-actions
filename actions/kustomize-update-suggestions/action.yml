@@ -14,7 +14,6 @@ inputs:
     default: helm
   patch:
     description: The name of the created artifact that contains suggestions in a patch file.
-    default: git.patch
   tag-configuration:
     description: The configuration for choosing docker images
     default: |
@@ -59,6 +58,7 @@ runs:
       env:
         TAGGING: ${{ inputs.tag-configuration }}
         EXCLUDES: ${{ inputs.path-excludes }}
+        PATCH: ${{ inputs.patch }}
       run: |
         tagging=$(mktemp)
         printf '%s\n' "$TAGGING" | tee $tagging
@@ -67,6 +67,8 @@ runs:
         excludes=$(mktemp)
         printf '%s\n' "$EXCLUDES" | tee $excludes
         echo "excludes=$excludes" | tee -a $GITHUB_ENV
+
+        echo "patch=${PATCH:-${{ inputs.type }}.patch}" | tee -a $GITHUB_ENV
 
     - name: Generate
       shell: bash
