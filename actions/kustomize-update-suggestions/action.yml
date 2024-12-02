@@ -36,7 +36,7 @@ runs:
     - name: Validate Type
       shell: bash
       env:
-        TYPE: ${{ inputs.path }}
+        TYPE: ${{ inputs.type }}
       run: |
         ALLOWED_TYPES=("helm" "images")
         if [[ ! " ${ALLOWED_TYPES[@]} " =~ " ${TYPE} " ]]; then
