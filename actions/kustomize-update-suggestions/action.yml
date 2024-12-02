@@ -28,7 +28,7 @@ runs:
       env:
         TARGET: ${{ inputs.path }}
       run: |
-        if [ ! -d "$TARGET" ];
+        if [ ! -d "$TARGET" ]; then
           echo "::error title=Invalid path::Invalid path '$TARGET', directory does not exist."
           exit 1
         fi
@@ -49,7 +49,7 @@ runs:
       env:
         TARGET: ${{ inputs.patch }}
       run: |
-        if [ -f "$TARGET" ];
+        if [ -f "$TARGET" ]; then
           echo "::error title=Invalid path::Invalid path '$TARGET', file already exists."
           exit 1
         fi
