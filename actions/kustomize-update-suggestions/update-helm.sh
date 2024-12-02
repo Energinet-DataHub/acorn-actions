@@ -20,12 +20,16 @@ for ITEM in $LIST; do
             continue
         fi
 
+        echo "not empty" 1>&2
+
         while read -r exclude; do
             echo "$ITEM" | grep "^$exclude" >/dev/null
             if [ "$?" -eq 0 ]; then
                 break 2
             fi
         done < "$EXCLUDES"
+
+        echo "not excluded" 1>&2
 
         name=$(echo "$item" | jq -r '.name' -)
         repo=$(echo "$item" | jq -r '.repo' -)
@@ -36,6 +40,8 @@ for ITEM in $LIST; do
         else
             updatedVersion=$(helm show chart "$name" --repo "$repo" | yq .version)
         fi
+
+        echo " - $updatedVersion" 1>&2
 
         if [ "$updatedVersion" = "" ]; then
             echo "::error::failed to lookup '$name' in '$repo'" 1>&2
