@@ -81,7 +81,7 @@ runs:
       shell: bash
       run: |
         git add ${{ inputs.path }}
-        git diff --cached --ignore-blank-lines --ignore-space-at-eol ${{ inputs.path }} | tee ${{ inputs.patch }}
+        git diff --cached --ignore-blank-lines --ignore-space-at-eol ${{ inputs.path }} | tee ${{ env.patch }}
 
     - name: Print summary
       shell: bash
@@ -89,9 +89,9 @@ runs:
         {
           echo "## ${{ inputs.type }} in ${{ inputs.path }}"
           echo "<details>"
-          echo "<summary>View $(wc -l < "${{ inputs.patch }}") patch lines</summary>"
+          echo "<summary>View $(wc -l < "${{ env.patch }}") patch lines</summary>"
           echo "<pre>"
-          cat "${{ inputs.patch }}" | grep -E "\S+"
+          cat "${{ env.patch }}" | grep -E "\S+"
           echo "</pre>"
           echo "</details>"
         } >> $GITHUB_STEP_SUMMARY
@@ -99,5 +99,5 @@ runs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.patch }}
-        path: ${{ inputs.patch }}
+        name: ${{ env.patch }}
+        path: ${{ env.patch }}
