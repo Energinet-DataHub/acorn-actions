@@ -87,7 +87,6 @@ runs:
       shell: bash
       run: |
         {
-          echo "## ${{ inputs.type }} in ${{ inputs.path }}"
           echo "<details>"
           echo "<summary>View $(wc -l < "${{ env.patch }}") patch lines</summary>"
           echo "<pre>"
