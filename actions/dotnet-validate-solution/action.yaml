@@ -78,7 +78,7 @@ runs:
       run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
 
     - name: 🧪 show
-      continue-on-error: true
+      continue-on-error: false
       if: always()
       run:  
         dotnet tool update -g dotnet-trx
