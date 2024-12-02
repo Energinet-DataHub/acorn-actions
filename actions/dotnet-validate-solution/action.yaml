@@ -53,6 +53,16 @@ runs:
       working-directory: ${{ inputs.path }}
       shell: bash
       run: dotnet --info
+      
+    - name: Add dotnet tools to PATH
+      working-directory: ${{ inputs.path }}
+      shell: bash
+      run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+    - name: Install dotnet-trx
+      working-directory: ${{ inputs.path }}
+      shell: bash
+      run: dotnet tool install -g dotnet-trx
 
     - name: Restore
       working-directory: ${{ inputs.path }}
@@ -63,25 +73,21 @@ runs:
         dotnet tool restore || true
         dotnet restore
 
-    - name: Lint
+    - name: Lint code
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
-      run: dotnet format --verify-no-changes -v diag
+      run: dotnet format --verify-no-changes
 
-    - name: Test
+    - name: Run tests
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
-      run: dotnet test --no-restore -warnaserror --logger "${{ inputs.generate-report == 'true' && 'trx;LogFileName=test_results.trx' || 'console;verbosity=normal' }}"
+      run: |
+        dotnet test --logger trx;LogFileName=test_results.trx
+        echo "::set-output name=trx_path::test_results.trx"
 
-    - name: Show
+    - name: Generate test results report
       working-directory: ${{ inputs.path }}
       shell: bash
-      continue-on-error: false
       if: always()
-      run:
-        dotnet tool update -g dotnet-trx
-        trx --output
+      run: |
+        trx --path ${{ inputs.path }} --output --gh-comment --gh-summary
