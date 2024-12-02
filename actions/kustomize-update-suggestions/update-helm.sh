@@ -23,10 +23,11 @@ for ITEM in $LIST; do
         echo "not empty" 1>&2
 
         while read -r exclude; do
-            echo "$ITEM | grep ^$exclude" 1>&2
+            if [ "$exclude" = "" ]; then
+                break
+            fi
             echo "$ITEM" | grep "^$exclude" >/dev/null
             if [ "$?" -eq 0 ]; then
-                echo "break" 1>&2
                 break 2
             fi
         done < "$EXCLUDES"
