@@ -61,12 +61,12 @@ runs:
         EXCLUDES: ${{ inputs.path-excludes }}
       run: |
         tagging=$(mktemp)
-        printf '%s\n' "$TAGGING" > $tagging
-        echo "tagging=$tagging" >> $GITHUB_ENV
+        printf '%s\n' "$TAGGING" | tee $tagging
+        echo "tagging=$tagging" | tee -a $GITHUB_ENV
 
         excludes=$(mktemp)
-        printf '%s\n' "$EXCLUDES" > $excludes
-        echo "excludes=$excludes" >> $GITHUB_ENV
+        printf '%s\n' "$EXCLUDES" | tee $excludes
+        echo "excludes=$excludes" | tee -a $GITHUB_ENV
 
     - name: Generate
       shell: bash

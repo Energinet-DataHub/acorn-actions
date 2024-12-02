@@ -9,6 +9,7 @@ tmp=$(mktemp -d)
 trap "rm -rf $tmp" EXIT
 
 for ITEM in $LIST; do
+    echo "Checking '$ITEM'" 1>&2
     yq '[.helmCharts[] | del(.valuesInline, .releaseName, .namespace, .includeCRDs)] | .[]' -o json < "$ITEM" | jq -rc | while IFS= read -r item; do
         if [ "$item" = "" ]; then
             continue
