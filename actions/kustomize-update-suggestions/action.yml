@@ -88,9 +88,9 @@ runs:
           echo "## ${{ inputs.type }} in ${{ inputs.path }}"
           echo "<details>"
           echo "<summary>View $(wc -l < "${{ inputs.patch }}") patch lines</summary>"
-          echo "<pre><code>"
-          cat "${{ inputs.patch }}"
-          echo "</code></pre>"
+          echo "<pre>"
+          cat "${{ inputs.patch }}" | grep -E "\S+"
+          echo "</pre>"
           echo "</details>"
         } >> $GITHUB_STEP_SUMMARY
 
