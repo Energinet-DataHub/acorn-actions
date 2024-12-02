@@ -1,7 +1,12 @@
 #!/bin/bash
 
+echo "ARGH!" 1>&2
+
 TARGET="$1"
 EXCLUDES="$2"
+
+echo "Starting at '$TARGET'" 1>&2
+echo "I am at '$(pwd)'" 1>&2
 
 LIST=$(find "$TARGET" -iname kustomization.yaml | sort)
 tmp=$(mktemp -d)
