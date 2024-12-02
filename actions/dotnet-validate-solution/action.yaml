@@ -53,7 +53,7 @@ runs:
       working-directory: ${{ inputs.path }}
       shell: bash
       run: dotnet --info
-      
+
     - name: Add dotnet tools to PATH
       working-directory: ${{ inputs.path }}
       shell: bash
