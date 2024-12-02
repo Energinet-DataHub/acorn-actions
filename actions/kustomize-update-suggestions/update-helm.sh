@@ -34,7 +34,7 @@ for ITEM in $LIST; do
             updatedVersion=$(helm show chart "$name" --repo "$repo" | yq .version)
         fi
 
-        if [ "$updatedVersion" = "" ]; then
+        if [ "$updatedVersion" = "" ] || [ "$updatedVersion" = "null" ]; then
             echo "::error::failed to lookup '$name' in '$repo'" 1>&2
             continue
         fi

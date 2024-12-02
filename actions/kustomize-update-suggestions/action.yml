@@ -86,9 +86,12 @@ runs:
       run: |
         {
           echo "## ${{ inputs.path }}"
+          echo "<details>"
+          echo "<summary>View $(wc -l "${{ inputs.patch }}") patch lines</summary>"
           echo \`\`\`
           cat "${{ inputs.patch }}"
           echo \`\`\`
+          echo "</details>"
         } >> $GITHUB_STEP_SUMMARY
 
     - name: Upload artifact
