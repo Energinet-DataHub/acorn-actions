@@ -85,12 +85,12 @@ runs:
       shell: bash
       run: |
         {
-          echo "## ${{ inputs.path }}"
+          echo "## ${{ inputs.type }} in ${{ inputs.path }}"
           echo "<details>"
-          echo "<summary>View $(wc -l "${{ inputs.patch }}") patch lines</summary>"
-          echo \`\`\`
+          echo "<summary>View $(wc -l < "${{ inputs.patch }}") patch lines</summary>"
+          echo "<pre>"
           cat "${{ inputs.patch }}"
-          echo \`\`\`
+          echo "</pre>"
           echo "</details>"
         } >> $GITHUB_STEP_SUMMARY
 
