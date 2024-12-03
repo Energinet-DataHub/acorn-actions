@@ -90,7 +90,7 @@ runs:
           echo "<details>"
           echo "<summary>View $(wc -l < "${{ env.patch }}") patch lines</summary>"
           echo "<pre>"
-          cat "${{ env.patch }}" | grep -E "\S+"
+          cat "${{ env.patch }}" | grep -E "\S+" || true
           echo "</pre>"
           echo "</details>"
         } >> $GITHUB_STEP_SUMMARY
