@@ -11,6 +11,9 @@ trap "rm -rf $tmp" EXIT
 
 for ITEM in $LIST; do
     while read -r exclude; do
+        if [ "$exclude" = "" ]; then
+            break
+        fi
         echo "$ITEM" | grep "^$exclude" >/dev/null
         if [ $? -eq 0 ]; then
             continue 2
