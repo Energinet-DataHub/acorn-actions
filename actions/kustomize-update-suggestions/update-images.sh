@@ -40,7 +40,7 @@ for ITEM in $LIST; do
         hash=$(cat "$tmp/hash")
 
         number=$(echo "$line" | cut -d':' -f1)
-        replacement=$(echo "$line" | cut -d':' -f2-3)
+        replacement=$(echo "$line" | cut -d':' -f2-3 | cut -d@ -f1)
 
         echo "sed -i '${number}s|^.*$|${replacement}@${hash} # ${tag}|' $ITEM"
     done | sh -x
