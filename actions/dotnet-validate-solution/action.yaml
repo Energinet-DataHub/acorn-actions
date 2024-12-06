@@ -78,10 +78,9 @@ runs:
       with:
         allure_results: allure-results
         allure_history: allure-history
-    
+
     - name: Upload Allure Report as Artifact
       uses: actions/upload-artifact@v4
       with:
         name: allure-report
         path: allure-history
-
