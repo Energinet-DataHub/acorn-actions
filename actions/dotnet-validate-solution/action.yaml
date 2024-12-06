@@ -86,8 +86,8 @@ runs:
       shell: bash
       run: allure generate allure-results -o allure-report
 
-      - name: Upload Allure Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Allure Report
-          path: allure-report
+    - name: Upload Allure Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Allure Report
+        path: allure-report
