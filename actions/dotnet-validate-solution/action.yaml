@@ -16,11 +16,6 @@ inputs:
     default: "false"
     required: false
 
-  generate-report:
-    description: Disable the console output, and generate a trx test report.
-    default: "false"
-    required: false
-
 runs:
   using: composite
 
@@ -59,11 +54,6 @@ runs:
       shell: bash
       run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-    - name: Install dotnet-trx
-      working-directory: ${{ inputs.path }}
-      shell: bash
-      run: dotnet tool install -g dotnet-trx
-
     - name: Restore
       working-directory: ${{ inputs.path }}
       shell: bash
@@ -78,16 +68,20 @@ runs:
       shell: bash
       run: dotnet format --verify-no-changes
 
-    - name: Run tests
+    - name: Test
       working-directory: ${{ inputs.path }}
       shell: bash
-      run: |
-        dotnet test --logger trx;LogFileName=test_results.trx
-        echo "::set-output name=trx_path::test_results.trx"
+      run: dotnet test --logger "allure" --no-restore -warnaserror
 
-    - name: Generate test results report
-      working-directory: ${{ inputs.path }}
-      shell: bash
-      if: always()
-      run: |
-        trx --path ${{ inputs.path }} --output --gh-comment --gh-summary
+    - name: Generate Allure Report
+      uses: simple-elf/allure-report-action@v1.7
+      with:
+        allure_results: allure-results
+        allure_history: allure-history
+    
+    - name: Upload Allure Report as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-report
+        path: allure-history
+
