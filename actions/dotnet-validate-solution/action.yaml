@@ -78,6 +78,17 @@ runs:
       shell: bash
       run: dotnet test --logger "trx;LogFileName=test-results.trx"
 
+    - name: Find TRX File
+      id: locate-trx
+      shell: bash
+      run: echo "TRX_PATH=$(find . -name '*.trx' -print -quit)" >> $GITHUB_ENV
+
+    - name: Verify TRX File
+      shell: bash
+      run: |
+        echo "TRX file found at: $TRX_PATH"
+        ls -lh "$TRX_PATH"
+
     - name: Convert TRX to Allure Results
       shell: bash
       run: allure generate test-results.trx -o allure-results
