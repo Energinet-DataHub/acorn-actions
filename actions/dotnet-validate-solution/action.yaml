@@ -49,6 +49,11 @@ runs:
       shell: bash
       run: dotnet --info
 
+    - name: Add dotnet tools to PATH
+      working-directory: ${{ inputs.path }}
+      shell: bash
+      run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
     - name: Restore
       working-directory: ${{ inputs.path }}
       shell: bash
@@ -58,16 +63,49 @@ runs:
         dotnet tool restore || true
         dotnet restore
 
-    - name: Lint
+    - name: Lint code
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
-      run: dotnet format --verify-no-changes -v diag
+      run: dotnet format --verify-no-changes
+
+    - name: Install Allure CLI
+      shell: bash
+      run: |
+        npm install -g allure-commandline
 
     - name: Test
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
-      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
+      run: dotnet test --logger "trx;LogFileName=test-results.trx"
+
+    - name: Find TRX File
+      shell: bash
+      id: locate-trx
+      run: |
+        TRX_PATH=$(find . -name '*.trx' -print -quit)
+        if [ -z "$TRX_PATH" ]; then
+          echo "No TRX file found. Please check your test configuration."
+          exit 1
+        fi
+        ABS_TRX_PATH=$(realpath "$TRX_PATH")
+        echo "TRX_PATH=$ABS_TRX_PATH" >> $GITHUB_ENV
+
+    - name: Verify TRX File
+      shell: bash
+      run: |
+        echo "TRX file found at: $TRX_PATH"
+        ls -lh "$TRX_PATH"
+
+    - name: Convert TRX to Allure Results
+      shell: bash
+      run: allure generate "$TRX_PATH" -o allure-results
+
+    - name: Generate Allure HTML Report
+      shell: bash
+      run: allure generate allure-results -o allure-report
+
+    - name: Upload Allure Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Allure Report
+        path: allure-report
