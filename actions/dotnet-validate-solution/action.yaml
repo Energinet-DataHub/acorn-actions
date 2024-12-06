@@ -69,6 +69,7 @@ runs:
       run: dotnet format --verify-no-changes
 
     - name: Install Allure CLI
+      shell: bash
       run: |
         npm install -g allure-commandline
 
