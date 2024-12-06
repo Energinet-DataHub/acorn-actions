@@ -68,10 +68,14 @@ runs:
       shell: bash
       run: dotnet format --verify-no-changes
 
+    - name: Install Allure CLI
+      run: |
+        npm install -g allure-commandline
+
     - name: Test
       working-directory: ${{ inputs.path }}
       shell: bash
-      run: dotnet test --logger "allure" --no-restore -warnaserror
+      run: dotnet test -- RunConfiguration.ReporterSwitch=allure
 
     - name: Generate Allure Report
       uses: simple-elf/allure-report-action@v1.7
