@@ -18,3 +18,11 @@ spec:
             - -c
           args:
             - sleep 1
+        - name: configure
+          image: alpine@sha256:hash2 # comment
+          command:
+            - /bin/sh
+            - -e
+            - -c
+          args:
+            - sleep 2

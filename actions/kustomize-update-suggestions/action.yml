@@ -14,7 +14,6 @@ inputs:
     default: helm
   patch:
     description: The name of the created artifact that contains suggestions in a patch file.
-    default: git.patch
   tag-configuration:
     description: The configuration for choosing docker images
     default: |
@@ -59,14 +58,17 @@ runs:
       env:
         TAGGING: ${{ inputs.tag-configuration }}
         EXCLUDES: ${{ inputs.path-excludes }}
+        PATCH: ${{ inputs.patch }}
       run: |
         tagging=$(mktemp)
-        printf '%s\n' "$TAGGING" > $tagging
-        echo "tagging=$tagging" >> $GITHUB_ENV
+        printf '%s\n' "$TAGGING" | tee $tagging
+        echo "tagging=$tagging" | tee -a $GITHUB_ENV
 
         excludes=$(mktemp)
-        printf '%s\n' "$EXCLUDES" > $excludes
-        echo "excludes=$excludes" >> $GITHUB_ENV
+        printf '%s\n' "$EXCLUDES" | tee $excludes
+        echo "excludes=$excludes" | tee -a $GITHUB_ENV
+
+        echo "patch=${PATCH:-${{ inputs.type }}.patch}" | tee -a $GITHUB_ENV
 
     - name: Generate
       shell: bash
@@ -79,20 +81,22 @@ runs:
       shell: bash
       run: |
         git add ${{ inputs.path }}
-        git diff --cached --ignore-blank-lines --ignore-space-at-eol ${{ inputs.path }} | tee ${{ inputs.patch }}
+        git diff --cached --ignore-blank-lines --ignore-space-at-eol ${{ inputs.path }} | tee ${{ env.patch }}
 
     - name: Print summary
       shell: bash
       run: |
         {
-          echo "## ${{ inputs.path }}"
-          echo \`\`\`
-          cat "${{ inputs.patch }}"
-          echo \`\`\`
+          echo "<details>"
+          echo "<summary>View $(wc -l < "${{ env.patch }}") patch lines</summary>"
+          echo "<pre>"
+          cat "${{ env.patch }}" | grep -E "\S+" || true
+          echo "</pre>"
+          echo "</details>"
         } >> $GITHUB_STEP_SUMMARY
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.patch }}
-        path: ${{ inputs.patch }}
+        name: ${{ env.patch }}
+        path: ${{ env.patch }}

@@ -11,6 +11,9 @@ trap "rm -rf $tmp" EXIT
 
 for ITEM in $LIST; do
     while read -r exclude; do
+        if [ "$exclude" = "" ]; then
+            break
+        fi
         echo "$ITEM" | grep "^$exclude" >/dev/null
         if [ $? -eq 0 ]; then
             continue 2
@@ -37,7 +40,7 @@ for ITEM in $LIST; do
         hash=$(cat "$tmp/hash")
 
         number=$(echo "$line" | cut -d':' -f1)
-        replacement=$(echo "$line" | cut -d':' -f2-3)
+        replacement=$(echo "$line" | cut -d':' -f2-3 | cut -d@ -f1)
 
         echo "sed -i '${number}s|^.*$|${replacement}@${hash} # ${tag}|' $ITEM"
     done | sh -x
