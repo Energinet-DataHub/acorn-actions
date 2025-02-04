@@ -8,8 +8,11 @@ inputs:
   configurations:
     description: A newline separated list of configuration files
     required: false
-  deploy_key:
-    description: A deploy key that has access to the environment repository.
+  github-app-id:
+    description: A github app id.
+    required: true
+  github-app-private-key:
+    description: A github app private key.
     required: true
   branch:
     description: The branch in the environment repository to target.
@@ -44,14 +47,19 @@ runs:
       if: inputs.configuration == '' && inputs.configurations == ''
       run: exit 1
 
-    - uses: actions/checkout@v4
+    - name: Generate token
+      id: generate-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.github-app-id }}
+        private-key: ${{ inputs.github-app-private-key }}
 
     - name: Checkout environment repository
       uses: actions/checkout@v4
       with:
         path: base
         repository: ${{ inputs.repository }}
-        ssh-key: ${{ inputs.deploy_key }}
+        token: ${{ steps.generate-token.outputs.token }}
         ref: main
 
     - name: Use correct branch
