@@ -47,6 +47,9 @@ runs:
       if: inputs.configuration == '' && inputs.configurations == ''
       run: exit 1
 
+    - name: Check out code
+      uses: actions/checkout@v4
+
     - name: Generate token
       id: generate-token
       uses: actions/create-github-app-token@v1
