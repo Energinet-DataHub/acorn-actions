@@ -1,12 +1,20 @@
 ARG SDK_VERSION
 ARG RUNTIME_VERSION
-FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS base
 
-FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble AS build
+# Build stage (Chiseled SDK)
+FROM mcr.microsoft.com/dotnet/sdk:${SDK_VERSION}-noble-chiseled AS build
 ARG PROJECT
 ARG MIGRATIONS
 WORKDIR /src/
+
+# Enable caching for NuGet packages and dotnet tools
+RUN --mount=type=cache,target=/src/packages \
+    --mount=type=cache,target=/root/.dotnet/tools \
+    dotnet tool restore || true
+
 COPY . .
+
+# Modify Assembly Name if needed
 RUN <<EOR
 grep -q "<AssemblyName>" ${PROJECT}
 if [ $? -eq 0 ]; then
@@ -15,10 +23,20 @@ else
     sed -i ${PROJECT} -e "s|</PropertyGroup>|<AssemblyName>main</AssemblyName></PropertyGroup>|"
 fi
 EOR
-RUN dotnet tool restore || true
-RUN dotnet publish ${PROJECT} -c Release -o /app/publish
+
+# Restore dependencies using cache
+RUN --mount=type=cache,target=/src/packages \
+    dotnet restore ${PROJECT} --packages /src/packages
+
+# Build & Publish using cache
+RUN --mount=type=cache,target=/src/packages \
+    --mount=type=cache,target=/root/.dotnet/tools \
+    dotnet publish ${PROJECT} -c Release -o /app/publish
+
 WORKDIR /app/publish
 RUN rm -f appsettings.json appsettings.*.json || true
+
+# Copy migrations if they exist
 RUN <<EOR
 mkdir /app/migrations
 if [ ! -z ${MIGRATIONS} ]; then
@@ -26,13 +44,12 @@ if [ ! -z ${MIGRATIONS} ]; then
 fi
 EOR
 
-FROM base AS final
+# Final runtime image (Chiseled runtime)
+FROM mcr.microsoft.com/dotnet/aspnet:${RUNTIME_VERSION}-noble-chiseled-extra AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=build /app/migrations /migrations/
-COPY --from=busybox:uclibc /bin/cp /bin/cp
-COPY --from=busybox:uclibc /bin/cat /bin/cat
-COPY --from=busybox:uclibc /bin/ls /bin/ls
+
 EXPOSE 8080
 EXPOSE 8081
 ENTRYPOINT ["/app/main"]
