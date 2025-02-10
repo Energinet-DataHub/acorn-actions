@@ -36,6 +36,27 @@ runs:
       shell: bash
       run: echo "LOWERCASED=$(echo 'ghcr.io/${{ github.repository_owner }}/${{ inputs.image-name }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+    - name: Cache extracted dependencies
+      uses: actions/cache@v3
+      id: cache
+      with:
+        path: |
+          nuget-packages
+          dotnet-build-cache
+          apt-cache
+        key: cache-${{ hashFiles(inputs.dockerfile) }}
+
+    - name: Inject cache into Docker
+      uses: reproducible-containers/buildkit-cache-dance@v3.1.0
+      with:
+        cache-map: |
+          {
+            "nuget-packages": "/root/.nuget/packages",
+            "dotnet-build-cache": "/root/.cache/NuGet/v3-cache",
+            "apt-cache": "/var/cache/apt"
+          }
+        skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
     - name: Log in to the Container registry
       uses: docker/login-action@5139682d94efc37792e6b54386b5b470a68a4737
       with:
