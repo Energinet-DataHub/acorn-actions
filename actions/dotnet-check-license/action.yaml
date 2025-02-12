@@ -50,9 +50,10 @@ runs:
   steps:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
-      dotnet-version: |
-        8.0.304
-        9.0.200
+      with:
+        dotnet-version: |
+          8.0.304
+          9.0.200
 
     - name: Install nuget-license tool
       shell: bash
