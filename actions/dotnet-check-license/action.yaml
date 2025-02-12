@@ -52,7 +52,7 @@ runs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          8.0.304
+          8.0.403
           9.0.200
 
     - name: Install nuget-license tool
