@@ -45,11 +45,17 @@ inputs:
     description: The version of the nuget-license tool to use
     required: false
 
+  dotnet-version:
+    description: The version of dotnet to use
+    required: true
+
 runs:
   using: composite
   steps:
-    - name: Setup .NET
+    - name: Setup dotnet
       uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
 
     - name: Install nuget-license tool
       shell: bash
