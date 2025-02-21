@@ -52,22 +52,58 @@ runs:
     - name: Restore
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
       run: |
         dotnet tool restore || true
         dotnet restore
 
+    - name: Fail on prerelease or <1.0.0 packages
+      working-directory: ${{ inputs.path }}
+      shell: bash
+      run: |
+        found_unstable=0
+
+        # Check all .sln files in the root. Adjust if needed to search subdirectories.
+        for sln in *.sln
+        do
+          if [ -f "$sln" ]; then
+            echo "Checking packages for solution: $sln"
+            out=$(dotnet list "$sln" package --include-transitive 2>&1)
+            echo "$out"
+
+            # If the output contains a dash or a 0.x.x version, mark as unstable
+            if echo "$out" | grep -Eq '(\s0\.|-)'; then
+              found_unstable=1
+            fi
+          fi
+        done
+
+        # Also check any standalone .csproj files (recursively) if no .sln or in addition
+        for csproj in **/*.csproj
+        do
+          if [ -f "$csproj" ]; then
+            echo "Checking packages for project: $csproj"
+            out=$(dotnet list "$csproj" package --include-transitive 2>&1)
+            echo "$out"
+            
+            if echo "$out" | grep -Eq '(\s0\.|-)'; then
+              found_unstable=1
+            fi
+          fi
+        done
+
+        if [ "$found_unstable" -eq 1 ]; then
+          echo "❌ Found prerelease (dash) or <1.0.0 packages (major=0). Failing the build..."
+          exit 1
+        else
+          echo "✅ All packages are >=1.0.0 and are stable releases (no dash)."
+        fi
+
     - name: Lint
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
       run: dotnet format --verify-no-changes -v diag
 
     - name: Test
       working-directory: ${{ inputs.path }}
       shell: bash
-      env:
-        version: ""
       run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
