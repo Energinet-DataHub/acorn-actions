@@ -71,8 +71,8 @@ runs:
             echo "$out"
 
             # If the output contains a dash or a 0.x.x version, mark as unstable
-            if echo "$out" | grep -Eq '(\s0\.|-)'; then
-              found_unstable=1
+            if echo "$out" | grep -Eq '(^|[^0-9])0\.[[:digit:]]|-' ; then
+                found_unstable=1
             fi
           fi
         done
@@ -84,8 +84,8 @@ runs:
             echo "Checking packages for project: $csproj"
             out=$(dotnet list "$csproj" package --include-transitive 2>&1)
             echo "$out"
-            if echo "$out" | grep -Eq '(\s0\.|-)'; then
-              found_unstable=1
+            if echo "$out" | grep -Eq '(^|[^0-9])0\.[[:digit:]]|-' ; then
+                found_unstable=1
             fi
           fi
         done
