@@ -84,7 +84,6 @@ runs:
             echo "Checking packages for project: $csproj"
             out=$(dotnet list "$csproj" package --include-transitive 2>&1)
             echo "$out"
-            
             if echo "$out" | grep -Eq '(\s0\.|-)'; then
               found_unstable=1
             fi
