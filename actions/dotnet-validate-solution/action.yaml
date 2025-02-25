@@ -69,10 +69,10 @@ runs:
       working-directory: ${{ inputs.path }}
       shell: bash
       env:
-        DOTNET_NOLOGO: true
-        DOTNET_CLI_TELEMETRY_OPTOUT: true
-        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
-        TERM: xterm
+        DOTNET_NOLOGO: "true"
+        DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "1"
+        TERM: "xterm"
         version: ""
       run: |
         dotnet build --no-restore -warnaserror -p:ContinuousIntegrationBuild=true || exit 1
