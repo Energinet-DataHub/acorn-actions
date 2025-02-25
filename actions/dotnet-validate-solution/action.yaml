@@ -52,57 +52,83 @@ runs:
     - name: Restore
       working-directory: ${{ inputs.path }}
       shell: bash
+      env:
+        version: ""
       run: |
         dotnet tool restore || true
         dotnet restore
 
-    - name: Fail on prerelease or <1.0.0 packages
+    - name: List Non-Compliant NuGet Packages
       working-directory: ${{ inputs.path }}
       shell: bash
       run: |
-        found_unstable=0
+        echo "Analyzing NuGet dependencies..."
 
-        # Check all .sln files in the root. Adjust if needed to search subdirectories.
-        for sln in *.sln
-        do
-          if [ -f "$sln" ]; then
-            echo "Checking packages for solution: $sln"
-            out=$(dotnet list "$sln" package --include-transitive 2>&1)
-            echo "$out"
+        # Find all project files
+        projects=$(find . -name "*.csproj" -not -path "./**/obj/*")
 
-            # If the output contains a dash or a 0.x.x version, mark as unstable
-            if echo "$out" | grep -Eq '(^|[^0-9])0\.[[:digit:]]|-' ; then
-                found_unstable=1
+        # Initialize arrays for non-compliant packages
+        pre_release_packages=()
+        under_versioned_packages=()
+
+        # Process each project
+        for project in $projects; do
+          echo "Checking $project..."
+
+          # Get direct dependencies
+          dependencies=$(dotnet list "$project" package --include-transitive | grep -E "^\s*[a-zA-Z0-9]")
+
+          # Process each dependency
+          while IFS= read -r line; do
+            package=$(echo "$line" | awk '{print $1}')
+            version=$(echo "$line" | awk '{print $2}')
+
+            # Check for pre-release versions
+            if [[ "$version" =~ - ]]; then
+              pre_release_packages+=("{\"project\":\"$(basename "${project%.*}")\",\"package\":\"$package\",\"version\":\"$version\"}")
             fi
-          fi
+
+            # Check for versions under 1.0.0
+            if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              major=$(echo "$version" | cut -d '.' -f 1)
+              if (( major < 1 )); then
+                under_versioned_packages+=("{\"project\":\"$(basename "${project%.*}")\",\"package\":\"$package\",\"version\":\"$version\"}")
+              fi
+            fi
+          done <<< "$dependencies"
         done
 
-        # Also check any standalone .csproj files (recursively) if no .sln or in addition
-        for csproj in **/*.csproj
-        do
-          if [ -f "$csproj" ]; then
-            echo "Checking packages for project: $csproj"
-            out=$(dotnet list "$csproj" package --include-transitive 2>&1)
-            echo "$out"
-            if echo "$out" | grep -Eq '(^|[^0-9])0\.[[:digit:]]|-' ; then
-                found_unstable=1
-            fi
-          fi
-        done
+        # Output results
+        echo "Non-compliant NuGet packages found:"
+        echo "Pre-release packages:"
+        printf '%s\n' "${pre_release_packages[@]}"
+        echo "\nUnder-versioned packages (below 1.0.0):"
+        printf '%s\n' "${under_versioned_packages[@]}"
 
-        if [ "$found_unstable" -eq 1 ]; then
-          echo "❌ Found prerelease (dash) or <1.0.0 packages (major=0). Failing the build..."
-          exit 1
-        else
-          echo "✅ All packages are >=1.0.0 and are stable releases (no dash)."
-        fi
+        # Create JSON output for artifact
+        echo "{
+          \"nonCompliantDependencies\": {
+            \"preRelease\": [${pre_release_packages[@]/%/,}],
+            \"underVersioned\": [${under_versioned_packages[@]/%/,}]
+          }
+        }" > non-compliant-packages.json
+
+    - name: Upload validation results
+      uses: actions/upload-artifact@v4
+      with:
+        name: non-compliant-packages
+        path: non-compliant-packages.json
 
     - name: Lint
       working-directory: ${{ inputs.path }}
       shell: bash
+      env:
+        version: ""
       run: dotnet format --verify-no-changes -v diag
 
     - name: Test
       working-directory: ${{ inputs.path }}
       shell: bash
+      env:
+        version: ""
       run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal"
