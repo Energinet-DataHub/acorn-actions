@@ -75,4 +75,4 @@ runs:
         TERM: "xterm"
         version: ""
       run: |
-        dotnet test --no-build -warnaserror --logger:"console;verbosity=minimal"
+        dotnet test --no-restore -warnaserror --logger:"console;verbosity=minimal"
