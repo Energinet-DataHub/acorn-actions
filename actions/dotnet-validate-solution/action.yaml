@@ -66,25 +66,10 @@ runs:
       run: dotnet format --verify-no-changes -v diag
 
     - name: Test
-      id: test
       working-directory: ${{ inputs.path }}
       shell: bash
       env:
-        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: "true"
-        DOTNET_CONSOLE_ANSI_COLOR_ENABLED: "true"
+        DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+        TERM: xterm
         version: ""
-      run: |
-        set +e
-        OUTPUT=$(dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal" 2>&1)
-        EXIT_CODE=$?
-        echo "$OUTPUT"
-
-        WARNINGS=$(echo "$OUTPUT" | grep "warning PO1001:" || true)
-        if [ ! -z "$WARNINGS" ]; then
-          echo "## ⚠️ Prerelease or Unstable Package Warnings ⚠️" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-          echo "$WARNINGS" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        exit $EXIT_CODE
+      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=minimal"
