@@ -74,4 +74,6 @@ runs:
         DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
         TERM: xterm
         version: ""
-      run: dotnet test --no-restore -warnaserror --logger:"console;verbosity=normal" -- /p:VSTest.Console.CancelAfterFirstError=true
+        run: |
+          dotnet build --no-restore -warnaserror -p:ContinuousIntegrationBuild=true || exit 1
+          dotnet test --no-build -warnaserror --logger:"console;verbosity=minimal"
