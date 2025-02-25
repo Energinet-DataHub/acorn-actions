@@ -58,66 +58,76 @@ runs:
         dotnet tool restore || true
         dotnet restore
 
-    - name: List Non-Compliant NuGet Packages
+    - name: Validate NuGet Dependencies
       working-directory: ${{ inputs.path }}
       shell: bash
       run: |
-        echo "Analyzing NuGet dependencies..."
+        echo "Checking for non-compliant NuGet dependencies..."
+
+        # Create output directory
+        mkdir -p validation-results
 
         # Find all project files
-        projects=$(find . -name "*.csproj" -not -path "./**/obj/*")
+        echo "Finding .csproj files..."
+        PROJECT_FILES=$(find . -name "*.csproj" -not -path "*/obj/*" -not -path "*/bin/*")
 
-        # Initialize arrays for non-compliant packages
-        pre_release_packages=()
-        under_versioned_packages=()
+        # Initialize results file
+        echo "[]" > validation-results/non-compliant-packages.json
 
-        # Process each project
-        for project in $projects; do
-          echo "Checking $project..."
+        # Track if we found any non-compliant packages
+        FOUND_NON_COMPLIANT=false
 
-          # Get direct dependencies
-          dependencies=$(dotnet list "$project" package --include-transitive | grep -E "^\s*[a-zA-Z0-9]")
+        # Process each project file
+        for PROJECT_FILE in $PROJECT_FILES; do
+          PROJECT_NAME=$(basename "${PROJECT_FILE%.*}")
+          echo "Analyzing $PROJECT_NAME..."
+
+          # Get direct dependencies only (no transitive)
+          DEPS=$(dotnet list "$PROJECT_FILE" package | grep -A 100 "Project reference" | grep -B 100 "Transitive" | grep -v "Project reference" | grep -v "Transitive" | grep -E "^\s+>")
 
           # Process each dependency
-          while IFS= read -r line; do
-            package=$(echo "$line" | awk '{print $1}')
-            version=$(echo "$line" | awk '{print $2}')
+          while IFS= read -r DEP_LINE; do
+            if [[ -n "$DEP_LINE" ]]; then
+              # Extract package name and version
+              PACKAGE_NAME=$(echo "$DEP_LINE" | awk '{print $2}')
+              PACKAGE_VERSION=$(echo "$DEP_LINE" | awk '{print $3}')
 
-            # Check for pre-release versions
-            if [[ "$version" =~ - ]]; then
-              pre_release_packages+=("{\"project\":\"$(basename "${project%.*}")\",\"package\":\"$package\",\"version\":\"$version\"}")
-            fi
+              # Check if version is below 1.0.0 or contains a dash
+              if [[ "$PACKAGE_VERSION" == 0.* || "$PACKAGE_VERSION" == *-* ]]; then
+                FOUND_NON_COMPLIANT=true
+                echo "  ❌ Non-compliant: $PACKAGE_NAME ($PACKAGE_VERSION)"
 
-            # Check for versions under 1.0.0
-            if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              major=$(echo "$version" | cut -d '.' -f 1)
-              if (( major < 1 )); then
-                under_versioned_packages+=("{\"project\":\"$(basename "${project%.*}")\",\"package\":\"$package\",\"version\":\"$version\"}")
+                # Add to JSON results
+                TMP_FILE=$(mktemp)
+                jq --arg project "$PROJECT_NAME" \
+                   --arg package "$PACKAGE_NAME" \
+                   --arg version "$PACKAGE_VERSION" \
+                   --arg file "$PROJECT_FILE" \
+                   '. += [{"project": $project, "package": $package, "version": $version, "file": $file}]' \
+                   validation-results/non-compliant-packages.json > "$TMP_FILE"
+                mv "$TMP_FILE" validation-results/non-compliant-packages.json
               fi
             fi
-          done <<< "$dependencies"
+          done <<< "$DEPS"
         done
 
-        # Output results
-        echo "Non-compliant NuGet packages found:"
-        echo "Pre-release packages:"
-        printf '%s\n' "${pre_release_packages[@]}"
-        echo "\nUnder-versioned packages (below 1.0.0):"
-        printf '%s\n' "${under_versioned_packages[@]}"
+        # Generate summary report
+        if [ "$FOUND_NON_COMPLIANT" = true ]; then
+          echo "📋 Summary of non-compliant packages:"
+          jq -r '.[] | "  - \(.package) (\(.version)) in \(.project)"' validation-results/non-compliant-packages.json
 
-        # Create JSON output for artifact
-        echo "{
-          \"nonCompliantDependencies\": {
-            \"preRelease\": [${pre_release_packages[@]/%/,}],
-            \"underVersioned\": [${under_versioned_packages[@]/%/,}]
-          }
-        }" > non-compliant-packages.json
+          echo "::warning::Found non-compliant NuGet packages. See artifact for details."
+        else
+          echo "✅ All NuGet dependencies comply with version policy."
+        fi
 
     - name: Upload validation results
       uses: actions/upload-artifact@v4
       with:
-        name: non-compliant-packages
-        path: non-compliant-packages.json
+        name: nuget-validation-results
+        path: validation-results/non-compliant-packages.json
+        retention-days: 90
+        if-no-files-found: warn
 
     - name: Lint
       working-directory: ${{ inputs.path }}
