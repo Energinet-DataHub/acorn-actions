@@ -41,7 +41,7 @@ inputs:
       ```
     required: false
   tool-version:
-    default: 3.0.13
+    default: 3.1.1
     description: The version of the nuget-license tool to use
     required: false
 
@@ -50,10 +50,6 @@ runs:
   steps:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          8.0.403
-          9.0.200
 
     - name: Install nuget-license tool
       shell: bash
