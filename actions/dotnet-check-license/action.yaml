@@ -41,7 +41,7 @@ inputs:
       ```
     required: false
   tool-version:
-    default: 3.0.13
+    default: 3.1.1
     description: The version of the nuget-license tool to use
     required: false
 
