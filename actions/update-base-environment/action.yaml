@@ -169,6 +169,7 @@ runs:
       if: ${{ inputs.dry_run != 'true' }}
       uses: EndBug/add-and-commit@v9
       with:
+        fetch: true
         message: Use ${{ env.version }}
         new_branch: ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || inputs.branch }}
         push: --force-with-lease --set-upstream origin ${{ github.event_name == 'push' && github.ref_name == 'main' && 'main' || inputs.branch }}
