@@ -40,8 +40,22 @@ inputs:
       ]
       ```
     required: false
+  license-override-file:
+    description: |
+      This file allows for overriding licenses for nuget packages.
+      Example:
+      ```json
+      [
+        {
+          "Id": "MockQueryable.NSubstitute",
+          "Version": "7.0.3",
+          "License": "MIT"
+        }
+      ]
+      ```
+    required: false
   tool-version:
-    default: 3.1.1
+    default: 3.1.2
     description: The version of the nuget-license tool to use
     required: false
 
@@ -68,6 +82,11 @@ runs:
 
         echo '### Ignored NuGet packages:' >> $GITHUB_STEP_SUMMARY
         jq -r '.[]' < '${{ inputs.license-ignore-file }}' | xargs -I {} echo '- {}' >> $GITHUB_STEP_SUMMARY
+
+    - name: Add override argument
+      shell: bash
+      if: inputs.license-override-file
+      run: echo "ARGUMENTS=--override-package-information ${{ inputs.license-override-file }} ${{ env.ARGUMENTS }}" | tee -a $GITHUB_ENV
 
     - name: Auto-correct project argument
       shell: bash
