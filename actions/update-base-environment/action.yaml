@@ -69,7 +69,10 @@ runs:
     - name: Use correct branch
       working-directory: base
       shell: bash
-      if: ${{ github.ref_name != 'main' }}
+      # if: ${{ github.ref_name != 'main' }}
+      # if: ${{ github.event_name != 'push' && github.ref_name != 'main' }}
+      # if: ${{ !(github.event_name == 'push' && github.ref_name == 'main') }}
+      if: ${{ inputs.branch != 'main' }}
       run: git fetch && git checkout ${{ inputs.branch }} 2>/dev/null || git checkout -b ${{ inputs.branch }}
 
     - name: Resolve version
