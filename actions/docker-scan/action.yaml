@@ -33,11 +33,13 @@ runs:
         ecr: false
 
     - name: Scan image
-      uses: anchore/scan-action@v3
+      uses: anchore/scan-action@v6
       id: scan
       with:
         image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         fail-build: false
+        output-format: sarif
+        output-file: results.sarif
 
     - name: Print scanning summary
       shell: bash
@@ -45,7 +47,7 @@ runs:
         pipx install sarif-tools
         {
           echo \`\`\`
-          sarif summary "${{ steps.scan.outputs.sarif }}"
+          sarif summary results.sarif
           echo \`\`\`
         } >> $GITHUB_STEP_SUMMARY
 
