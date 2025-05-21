@@ -38,7 +38,9 @@ runs:
       with:
         image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         fail-build: false
-        cache-db: true
+        output-format: sarif
+        output-file: results.sarif
+        cache-db: false
 
     - name: Print scanning summary
       shell: bash
@@ -46,7 +48,7 @@ runs:
         pipx install sarif-tools
         {
           echo \`\`\`
-          sarif summary "${{ steps.scan.outputs.sarif }}"
+          sarif summary results.sarif
           echo \`\`\`
         } >> $GITHUB_STEP_SUMMARY
 
