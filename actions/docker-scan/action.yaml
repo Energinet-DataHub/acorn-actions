@@ -38,6 +38,7 @@ runs:
       with:
         image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
         fail-build: false
+        cache-db: true
 
     - name: Print scanning summary
       shell: bash
