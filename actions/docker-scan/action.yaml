@@ -33,7 +33,7 @@ runs:
         ecr: false
 
     - name: Scan image
-      uses: anchore/scan-action@v3
+      uses: anchore/scan-action@v6
       id: scan
       with:
         image: ${{ env.LOWERCASED }}:${{ inputs.image-tag }}
