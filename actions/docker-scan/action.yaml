@@ -40,7 +40,6 @@ runs:
         fail-build: false
         output-format: sarif
         output-file: results.sarif
-        cache-db: true
 
     - name: Print scanning summary
       shell: bash
