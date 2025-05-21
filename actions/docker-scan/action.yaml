@@ -32,12 +32,6 @@ runs:
         password: ${{ github.token }}
         ecr: false
 
-    - name: Download Grype & latest DB
-      id: grype
-      uses: anchore/scan-action/download-grype@v6
-      with:
-        cache-db: true
-
     - name: Scan image
       uses: anchore/scan-action@v6
       id: scan
